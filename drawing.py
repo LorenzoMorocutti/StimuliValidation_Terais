@@ -13,6 +13,7 @@ participant = sys.argv[2]
 
 start = time.time()
 
+#change the path to folder/in/which/you/clonated/Images
 path_images_folder = "/home/cmazzola/Documents/Projects/Shared_Drawing/Stimuli Validation/Terais-main/Images/"
 strokes_file_path = path_images_folder + participant + "/strokes.csv"
 
