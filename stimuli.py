@@ -28,7 +28,7 @@ if os.path.isdir(images_dir):
 else:
     os.mkdir(images_dir)
 
-####### CHANGE THE PATH
+
 now = datetime.now()
 date_hour = now.strftime("_%d-%m-%Y_%H:%M:%S")
 participant_dir = participant + str(date_hour)
@@ -415,7 +415,7 @@ def configure():
     monitorWidth = 50.2
     viewdist = 25.4
     monitorname = 'testMonitor'
-    scrn = 1
+    scrn = 0
     mon = monitors.Monitor(monitorname, width=monitorWidth, distance=viewdist)
     mon.setSizePix((widthPix, heightPix))
 
