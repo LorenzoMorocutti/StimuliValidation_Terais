@@ -25,4 +25,9 @@ git clone https://github.com/LorenzoMorocutti/StimuliValidation_Terais.git
 ```
 Then, go to the stimuli.py script and change the paths at the beginning of the file (to match the location in which you cloned the repository).
 Do the same for the drawing.py script.
-At this point you should go to the settings --> Appearance --> turn on the 'Auto-hide the dock' to hide the lateral bar during the running of the application, so that the participant can draw freely on the entire screen and you are done!
+At this point you should go to the settings --> Appearance --> turn on the 'Auto-hide the dock' to hide the lateral bar during the running of the application, so that the participant can draw freely on the entire screen.
+Now you are ready to run the code with the following command:
+```
+python3 stimuli.py 'name_of_the_participant'
+```
+and you are done!
