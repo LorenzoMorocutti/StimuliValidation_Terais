@@ -16,7 +16,12 @@ from datetime import datetime
 
 participant = sys.argv[1]
 
+#change this path to the/folder/in/which/you/clonated/Images 
 images_dir = "/home/cmazzola/Documents/Projects/Shared_Drawing/Stimuli Validation/Terais-main/Images/"
+
+#change this path to the/folder/in/which/you/clonated/drawing.py
+script_path = "/home/cmazzola/Documents/Projects/Shared_Drawing/Stimuli Validation/Terais-main/drawing.py"
+script_path_trial = "/home/cmazzola/Documents/Projects/Shared_Drawing/Stimuli Validation/Terais-main/drawing_trial.py"
 
 if os.path.isdir(images_dir):
     print("folder already exist")
@@ -61,10 +66,6 @@ number = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
 button = []
 
 global win
-
-####### CHANGE THE PATH
-script_path = "/home/cmazzola/Documents/Projects/Shared_Drawing/Stimuli Validation/Terais-main/drawing.py"
-script_path_trial = "/home/cmazzola/Documents/Projects/Shared_Drawing/Stimuli Validation/Terais-main/drawing_trial.py"
 
 drawing_enjoyment = 0
 drawing_frequency = 0
@@ -437,8 +438,6 @@ def configure():
 
 
 def main():
-
-    subprocess.run(["xrandr", "--output", "eDP-1", "--off"])
     
     configure()
 
@@ -714,8 +713,6 @@ def main():
     win.flip()
 
     wait_touch()
-    
-    subprocess.run(["xrandr", "--output", "eDP-1", "--mode", "1920x1080", "--panning", "1920x1080", "--pos", "1920x0", "--primary"])
 
 if __name__ == '__main__':
     main()
