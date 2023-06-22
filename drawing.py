@@ -195,7 +195,7 @@ def on_mouse_release(event):
 
 
 def alert_window():
-    global temp, margin
+    global temp, margin, prev_x, prev_y
 
     ### PSYCHOPY
     widthPix = 1920
@@ -230,6 +230,9 @@ def alert_window():
     win.close()
 
     margin = time.time()
+
+    prev_x = None
+    prev_y = None
 
 def quit_program():
     global total_drawing_time, latency, stroke_count, temp, margin
