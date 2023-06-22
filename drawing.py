@@ -13,7 +13,6 @@ participant = sys.argv[2]
 
 start = time.time()
 
-#change the path to folder/in/which/you/clonated/Images
 path_images_folder = "/home/cmazzola/Documents/Projects/Shared_Drawing/Stimuli Validation/Terais-main/Images/"
 strokes_file_path = path_images_folder + participant + "/strokes.csv"
 
@@ -92,8 +91,10 @@ prev_y = None
 stroke_count = 0
 
 do_one_time = True
-latency = 0
-total_drawing_time=0
+total_drawing_time = 0.0
+latency = 0.0
+temp = 0.0
+margin = 0.0
 
 ############################### END OF THE CONFIGURATION ################################
 
@@ -190,11 +191,48 @@ def on_mouse_release(event):
     prev_y = None   
     
     stroke_count += 1
-   
 
+
+
+def alert_window():
+    global temp, margin
+
+    ### PSYCHOPY
+    widthPix = 1920
+    heightPix = 1080
+    monitorWidth = 50.2
+    viewdist = 25.4
+    monitorname = 'testMonitor'
+    scrn = 0
+    mon = monitors.Monitor(monitorname, width=monitorWidth, distance=viewdist)
+    mon.setSizePix((widthPix, heightPix))
+
+    win = visual.Window(
+        monitor=mon,
+        size=(widthPix, heightPix),
+        color=(1, 1, 1),
+        colorSpace='rgb',
+        units='deg',
+        screen=scrn,
+        allowGUI=False,
+        fullscr=True
+    )
+
+    ###
+
+    temp = time.time() - start
+
+    text = visual.TextStim(win, text="Time to finish your drawing...", color=(-1, -1, -1), pos=(0.0, 11.0),
+                           colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center", wrapWidth=500)
+    text.draw()
+    win.flip()
+    time.sleep(3)
+    win.close()
+
+    margin = time.time()
 
 def quit_program():
-    global total_drawing_time, latency, stroke_count
+    global total_drawing_time, latency, stroke_count, temp, margin
 
     data = []
 
@@ -203,13 +241,14 @@ def quit_program():
 
     ImageGrab.grab().crop((65, 65, 1920, 1015)).save(path_images_folder + participant + "/" + savelocation[n])
 
-    total_drawing_time = time.time()-start
+    if temp > 0:
+        temp2 = time.time() - margin
+        total_drawing_time = temp + temp2
+    else:
+        total_drawing_time = time.time() - start
 
-    data = np.array([
-        latency,
-        total_drawing_time,
-        stroke_count
-    ])
+    data = np.array([latency, total_drawing_time, stroke_count])
+
     print(','.join(map(str, data)))
     #print(data)
 
@@ -391,37 +430,7 @@ def quit_program():
     root.destroy()
 
     
-def alert_window():
 
-### PSYCHOPY
-    widthPix = 1920
-    heightPix = 1080
-    monitorWidth = 50.2
-    viewdist = 25.4
-    monitorname = 'testMonitor'
-    scrn = 0
-    mon = monitors.Monitor(monitorname, width=monitorWidth, distance=viewdist)
-    mon.setSizePix((widthPix, heightPix))
-    
-    win = visual.Window(
-        monitor=mon,
-        size=(widthPix, heightPix),
-        color=(1, 1, 1),
-        colorSpace='rgb',
-        units='deg',
-        screen=scrn,
-        allowGUI=False,
-        fullscr=True
-	)
-
-###
-	
-    text = visual.TextStim(win, text="Time to finish your drawing...", color=(-1, -1, -1), pos=(0.0, 11.0),
-                           colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center", wrapWidth=500)
-    text.draw()
-    win.flip()
-    time.sleep(3)
-    win.close()
 
 
 ######################### END OF THE FUNCTIONS #############################
