@@ -110,8 +110,9 @@ def on_mouse_move(event):
         latency = time.time() - start
         do_one_time = False
         #print(latency)
-        root.after(10000, lambda: alert_window())
-        root.after(15000, lambda: quit_program())
+        root.after(53000, lambda: time.sleep(2))
+        root.after(55000, lambda: alert_window())
+        root.after(65000, lambda: quit_program())
 
 
     x = event.x
