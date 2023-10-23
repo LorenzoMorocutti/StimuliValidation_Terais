@@ -108,11 +108,12 @@ def on_mouse_move(event):
 
     while do_one_time:
         latency = time.time() - start
-        do_one_time = False
-        #print(latency)
         root.after(53000, lambda: time.sleep(2))
         root.after(55000, lambda: alert_window())
         root.after(65000, lambda: quit_program())
+        do_one_time = False
+        #print(latency)
+
 
 
     x = event.x
@@ -196,7 +197,7 @@ def on_mouse_release(event):
 
 
 def alert_window():
-    global temp, margin, prev_x, prev_y
+    global temp, margin, prev_y, prev_x
 
     ### PSYCHOPY
     widthPix = 1920
@@ -231,9 +232,8 @@ def alert_window():
     win.close()
 
     margin = time.time()
-
-    prev_x = None
     prev_y = None
+    prev_x = None
 
 def quit_program():
     global total_drawing_time, latency, stroke_count, temp, margin
