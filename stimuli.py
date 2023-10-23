@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-#add stupid comment
-
 import os
 import time
 import pandas as pd
