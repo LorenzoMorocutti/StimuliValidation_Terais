@@ -17,7 +17,7 @@ window_height = 950
 canvas = tk.Canvas(root, width=window_width, height=window_height, bg='white')
 canvas.pack()
 
-button = tk.Button(text="Se hai finito, premi il bottone", command=lambda: quit_program(), height=4)
+button = tk.Button(text="If you finished, press the button", command=lambda: quit_program(), height=4)
 button.pack()
 
 # Set the color and size for drawing

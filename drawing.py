@@ -10,10 +10,11 @@ import csv
 
 n = int(sys.argv[1])
 participant = sys.argv[2]
+path_images_folder = sys.argv[3]
 
 start = time.time()
 
-path_images_folder = "/home/cmazzola/Documents/Projects/Shared_Drawing/Stimuli Validation/Terais-main/Images/"
+#path_images_folder = "/home/cmazzola/Documents/Projects/Shared_Drawing/Stimuli Validation/Terais-main/Images/"
 strokes_file_path = path_images_folder + participant + "/strokes.csv"
 
 
@@ -256,7 +257,8 @@ def quit_program():
     print(','.join(map(str, data)))
     #print(data)
 
-
+	
+"""
     df_strokes = pd.read_csv(strokes_file_path)
 
 
@@ -430,7 +432,7 @@ def quit_program():
                                    xy_coordinates_26, xy_coordinates_27, xy_coordinates_28])
 
         new_df_strokes.to_csv(strokes_file_path, mode='w', index=False, header=True)
-
+"""
     root.destroy()
 
     
