@@ -725,7 +725,7 @@ class socialDrawingTask(yarp.RFModule):
 
     def save_rankings(self, n):
 
-        path_var = self.images_dir+"/"+str(self.categories[n])+"_experiment.ndjson"
+        path_var = self.images_dir+"/"+str(self.categories[n])+"_quantitative_data.ndjson"
 
         ranking_data = {
             'Participant_ID': self.participant_name,
