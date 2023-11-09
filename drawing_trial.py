@@ -1,8 +1,7 @@
 import tkinter as tk
 import sys
 import time
-
-
+from screeninfo import get_monitors
 
 # Initialize Tkinter
 root = tk.Tk()
@@ -10,8 +9,9 @@ root = tk.Tk()
 ######### CONFIGURATION OF THE GLOBAL VARIABLES OF THE CANVAS AND SCREENSHOTS ###########
 
 # Set the dimensions of the drawing window
-window_width = 1920
-window_height = 950
+
+window_width = int(sys.argv[1])
+window_height = int(sys.argv[2])-130
 
 # Create the drawing canvas
 canvas = tk.Canvas(root, width=window_width, height=window_height, bg='white')
@@ -22,7 +22,7 @@ button.pack()
 
 # Set the color and size for drawing
 draw_color = 'black'
-draw_size = 5
+draw_size = 4
 
 # Store the coordinates of the previous point
 prev_x = None

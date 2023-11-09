@@ -11,6 +11,10 @@ import csv
 import numpy as np
 from PIL import ImageGrab
 import subprocess
+from screeninfo import get_monitors
+import json
+import ndjson
+
 
 
 def info(msg):
@@ -29,16 +33,17 @@ class socialDrawingTask(yarp.RFModule):
         self.output_port = None
         self.input_bottle = None
 
+        self.code_path = None
         self.drawing_path = None
         self.drawing_trial_path = None
 
         self.images_dir = None
+        self.experiment_dir = None
         self.date_hour = None
         self.participant_dir = None
         self.participant_path = None
         self.participant_name = None
-        self.strokes_path = None
-        self.dels_path = None
+        self.artistic_skills_path = None
 
         self.categories = None
         self.categories_sequence = None
@@ -67,6 +72,10 @@ class socialDrawingTask(yarp.RFModule):
         self.win = None
         self.myMouse = None
 
+        self.country = None
+        self.condition = None
+        self.timestamp = None
+
         self.state = None
 
     def configure(self, rf):
@@ -75,17 +84,22 @@ class socialDrawingTask(yarp.RFModule):
                                     yarp.Value("socialDrawingTask"),
                                     "module name (string)").asString()
 
+        self.code_path = rf.check("code_path_path",
+                                     yarp.Value(
+                                         "/usr/local/src/robot/cognitiveinteraction/socialDrawingTask/"),
+                                     "Path to the code folder (string)").asString()
+
         self.drawing_path = rf.check("drawing_path",
-                                          yarp.Value("/usr/local/src/robot/cognitiveinteraction/stimuli_validation/drawing.py"),
+                                          yarp.Value("/usr/local/src/robot/cognitiveinteraction/socialDrawingTask/drawing.py"),
                                           "Path to the drawing script (string)").asString()
 
         self.drawing_trial_path = rf.check("drawing_trial_path",
-                                     yarp.Value("/usr/local/src/robot/cognitiveinteraction/stimuli_validation/drawing_trial.py"),
+                                     yarp.Value("/usr/local/src/robot/cognitiveinteraction/socialDrawingTask/drawing_trial.py"),
                                      "Path to the drawing trial script (string)").asString()
 
         self.images_dir = rf.check("images_dir",
                                     yarp.Value(
-                                        "/usr/local/src/robot/cognitiveinteraction/stimuli_validation/Images/"),
+                                        "/usr/local/src/robot/cognitiveinteraction/socialDrawingTask/Images/"),
                                     "Path to images directory (string)").asString()
 
         #print(self.saving_path)
@@ -105,17 +119,28 @@ class socialDrawingTask(yarp.RFModule):
         self.viewdist = rf.check("viewdist",
                                     yarp.Value(30),
                                     "player distance from the monitor (int)").asInt32()
-        self.scrn = 0
+        self.scrn = rf.check("screen",
+                                    yarp.Value(1),
+                                    "display on which the experiment is run (0: main, 1: secondary)").asInt32()
 
         self.participant_name = rf.check("participant",
                                          yarp.Value("unnamed"),
                                          "participant name (String)").asString()
 
+        self.country = rf.check("country",
+                                         yarp.Value("Italy"),
+                                         "participant country (String)").asString()
+
+        self.condition = rf.check("condition",
+                                         yarp.Value("no_robot"),
+                                         "condition of the experiment (robot/no_robot) (String)").asString()
+
+        self.artistic_skills_path = self.code_path + "/artistic_skills.ndjson"
+
         self.date_hour = datetime.now().strftime("_%d-%m-%Y_%H:%M:%S")
         self.participant_dir = self.participant_name + str(self.date_hour)
         self.participant_path = self.images_dir + self.participant_dir
-        self.strokes_path = self.participant_path + "/strokes.csv"
-        self.dels_path = self.participant_path + "/dels.csv"
+        #self.classes_rankings_path = self.images_dir + "/classes_rankings.ndjson"
 
         self.categories_sequence = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
         random.shuffle(self.categories_sequence)
@@ -125,24 +150,26 @@ class socialDrawingTask(yarp.RFModule):
         self.number_button = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
         self.button = []
 
-        self.drawing_enjoyment = 0
-        self.drawing_frequency = 0
-        self.drawing_percentage = 0
+        self.drawing_enjoyment = 0.0
+        self.drawing_frequency = 0.0
+        self.drawing_percentage = 0.0
 
-        self.difficulty_ranking = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        self.enjoyment_ranking = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        self.likeability_ranking = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        self.difficulty_ranking = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        self.enjoyment_ranking = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        self.likeability_ranking = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 
-        self.latency_time = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        self.total_drawing_time = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        self.number_of_strokes = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        self.latency_time = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        self.total_drawing_time = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        self.number_of_strokes = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 
         self.monitorname = "testMonitor"
-        self.scrn = 0
+        print(self.widthPix, self.heightPix)
         self.mon = monitors.Monitor(self.monitorname, width=self.monitorWidth, distance=self.viewdist)
+        self.mon.setSizePix((self.widthPix, self.heightPix))
+
+        self.country = "IT"
 
         self.state = "start"
-
 
         self.handle_port = yarp.Port()
         self.attach(self.handle_port)
@@ -211,14 +238,19 @@ class socialDrawingTask(yarp.RFModule):
 
         elif self.state == "start":
             print(self.state)
+            self.switch_off_screen()
+            self.create_images_folder()
+            self.create_participant_folder()
+            self.create_ndjson_files()
             self.configuration_window()
             self.text_and_button_screen("Welcome!\nThis is a first trial to help\n"
                                      "you understand how the drawing activity will work.")
             self.text_and_button_screen("When you are ready, press the button and\n"
                                      "a subject to be drawn will appear on the screen.")
+            print("finished the questions")
             self.state = "trial_question"
 
-        elif self.state == "trial_request":
+        elif self.state == "trial_question":
             print(self.state)
             self.category_trial_request()
             self.text_and_button_screen("Great!\n Is everything clear? Then you can\n"
@@ -241,19 +273,37 @@ class socialDrawingTask(yarp.RFModule):
             print(self.state)
             for i in self.categories_sequence:
                 self.drawing_task(i)
+                self.save_rankings(i)
+            self.state = "saving_data"
+
+        elif self.state == "saving_data":
+            print(self.state)
+            self.save_art()
+            #self.save_times()
             self.state = "end_session"
 
         elif self.state == "end_session":
             print(self.state)
             print("this session is completed")
-            text = visual.TextStim(self.win, text="Thank you very much!", color=(1, 1, 1), pos=(0.0, 11.0),
+            text = visual.TextStim(self.win, text="Thank you very much!", color=(1, 1, 1), pos=(0.0, 9.0),
                            colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center", wrapWidth=500)
             text.draw()
             self.win.flip()
 
             self.wait_touch()
+            self.switch_on_screen()
 
         return True
+
+
+    def switch_off_screen(self):
+        subprocess.run(["xrandr", "--output", "eDP", "--off"])
+        return
+
+    def switch_on_screen(self):
+        subprocess.run(
+            ["xrandr", "--output", "eDP", "--mode", "1920x1080", "--panning", "1920x1080", "--pos", "1920x0", "--primary"])
+        return
 
 
     def create_images_folder(self):
@@ -261,15 +311,25 @@ class socialDrawingTask(yarp.RFModule):
             print("images folder already existing")
         else:
             os.mkdir(self.images_dir)
-
+            self.experiment_dir = self.images_dir+"/Experiments"
+            os.mkdir(self.experiment_dir)
         return
 
     def create_participant_folder(self):
         os.mkdir(self.participant_path)
 
+    def create_ndjson_files(self):
+
+        if os.path.isfile(self.artistic_skills_path):
+            print("file already exist")
+        else:
+            f = open(self.artistic_skills_path, "x")
+
+        return
 
     def configuration_window(self):
-        self.mon.setSizePix((self.widthPix, self.heightPix))
+
+        print(self.scrn, self.widthPix, self.heightPix, self.monitorWidth)
         self.win = visual.Window(
             monitor=self.mon,
             size=(self.widthPix, self.heightPix),
@@ -277,14 +337,12 @@ class socialDrawingTask(yarp.RFModule):
             colorSpace='rgb',
             units='deg',
             screen=self.scrn,
-            allowGUI=True,
+            allowGUI=False,
             fullscr=True
         )
 
         self.myMouse = event.Mouse()
-        self.myMouse.mouseClock = core.Clock()
         self.myMouse.setPos(newPos=(0, 0))
-
 
         return
 
@@ -293,11 +351,13 @@ class socialDrawingTask(yarp.RFModule):
                                    size=[4000, 4000], units='pix', ori=0)
         blue_poly.draw()
         self.win.flip()  # show the stim
-        time.sleep(0.001)
+        time.sleep(0.1)
 
     def wait_touch(self):
+
         self.myMouse.clickReset()
         buttons = self.myMouse.getPressed()
+
         print(buttons)
         while buttons[0] == False | buttons[1] == False | buttons[2] == False:
             buttons = self.myMouse.getPressed()
@@ -311,33 +371,25 @@ class socialDrawingTask(yarp.RFModule):
 
     def text_and_button_screen(self, text):
 
-
-
-        text_stim = visual.TextStim(self.win, text=text, color=(1, 1, 1), pos=(0.0, 11.0),
-                           colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center", wrapWidth=250)
+        text_stim = visual.TextStim(self.win, text=text, color=(1, 1, 1), pos=(0.0, 9.0*(self.widthPix/1920)),
+                           colorSpace='rgb', bold=False, height=2.0*(self.widthPix/1920), anchorHoriz="center", wrapWidth=350*(self.widthPix/1920))
 
         text_stim.draw()
 
         button_continue = visual.ButtonStim(self.win, text="Click to continue", color=[1, 1, 1], colorSpace='rgb',
-                                   fillColor=[-0.3, -0.3, -0.3], pos=[0, -250], size=(400, 150), units='pix')
+                                   fillColor=[-0.3, -0.3, -0.3], pos=[0, -350], size=(400, 150), units='pix')
 
         button_continue.draw()
 
         self.win.flip()  # show the stim
-        self.wait_touch()
-        self.win.flip(clearBuffer=True)
-        print("touched!")
 
         touch = False
 
         while touch == False:
-            print(self.myMouse.getPressed())
             if self.myMouse.isPressedIn(button_continue):
                 touch = True
 
-        time.sleep(0.5)
-        buttons = self.myMouse.getPressed()
-        self.myMouse.clickReset(buttons)
+        time.sleep(0.1)
 
         return
 
@@ -345,15 +397,15 @@ class socialDrawingTask(yarp.RFModule):
 
         if j == 7:
             text_stim = visual.TextStim(self.win,
-                                   text=text, color=(1, 1, 1), pos=(0.0, 11.0), colorSpace='rgb', bold=False, height=3.5,
-                                    anchorHoriz="center", wrapWidth=500)
+                                   text=text, color=(1, 1, 1), pos=(0.0, 9.0*(self.widthPix/1920)), colorSpace='rgb', bold=False, height=2.0*(self.widthPix/1920),
+                                    anchorHoriz="center", wrapWidth=350*(self.widthPix/1920))
             text_stim.draw()
 
             space = 0
 
             for i in range(0, 7):
                 self.button.append(visual.ButtonStim(self.win, text=self.number_button[i], color=[1, 1, 1], colorSpace='rgb',
-                                                fillColor=[-0.3, -0.3, -0.3], pos=[-720 + space, -250], size=(100, 100), units='pix'))
+                                                fillColor=[-0.3, -0.3, -0.3], pos=[-720 + space, -350*(self.widthPix/1920)], size=(100, 100), units='pix'))
                 space += 240
 
             for k in range(0, 7):
@@ -361,19 +413,19 @@ class socialDrawingTask(yarp.RFModule):
 
             self.win.flip()
         elif j == 10:
-            text_stim = visual.TextStim(self.win, text=text, color=(1, 1, 1), pos=(0.0, 11.0), colorSpace='rgb',
-                                        bold=False, height=3.5, anchorHoriz="center", wrapWidth=500)
+            text_stim = visual.TextStim(self.win, text=text, color=(1, 1, 1), pos=(0.0, 9.0*(self.widthPix/1920)), colorSpace='rgb',
+                                        bold=False, height=2.0*(self.widthPix/1920), anchorHoriz="center", wrapWidth=350*(self.widthPix/1920))
             text_stim.draw()
 
             space = 0
 
             self.button.append(visual.ButtonStim(self.win, text="0%", color=[1, 1, 1], colorSpace='rgb', fillColor=[-0.3, -0.3, -0.3],
-                                  pos=[-800, -250], size=(100, 100), units='pix'))
+                                  pos=[-800, -350*(self.widthPix/1920)], size=(100, 100), units='pix'))
 
             for i in range(0, 10):
                 self.button.append(visual.ButtonStim(self.win, text=self.number_button[i] + "0%", color=[1, 1, 1], colorSpace='rgb',
                                                 fillColor=[-0.3, -0.3, -0.3],
-                                                pos=[-640 + space, -250], size=(100, 100), units='pix'))
+                                                pos=[-640 + space, -350*(self.widthPix/1920)], size=(100, 100), units='pix'))
                 space += 160
 
             for k in range(0, 11):
@@ -383,13 +435,38 @@ class socialDrawingTask(yarp.RFModule):
 
         return
 
+    def text_multiple_buttons_and_image_screen(self, text, j, n):
+
+        text_stim = visual.TextStim(self.win, text=text, color=(1, 1, 1), pos=(0.0, 9.0*(self.widthPix/1920)), colorSpace='rgb', bold=False, height=2.0*(self.widthPix/1920),
+                                anchorHoriz="center", wrapWidth=350*(self.widthPix/1920))
+        text_stim.draw()
+
+        image = visual.ImageStim(self.win, image=self.participant_path + "/" + self.categories[n] + ".png", size=(600*(self.widthPix/1920), 337*(self.widthPix/1920)),
+                                 units='pix', pos=(0.0, -5.0*(2*self.widthPix/1920)))
+        image.draw()
+
+        space = 0
+
+        for i in range(0, j):
+            self.button.append(visual.ButtonStim(self.win, text=self.number_button[i], color=[1, 1, 1], colorSpace='rgb',
+                                            fillColor=[-0.3, -0.3, -0.3], pos=[-720 + space, -350*(self.widthPix/1920)], size=(100, 100), units='pix'))
+            space += 240
+
+        for k in range(0, j):
+            self.button[k].draw()
+
+        self.win.flip()
+
+
+        return
+
 
     def category_request(self, n):
 
-        text_stim = visual.TextStim(self.win, text="Please draw with your finger the...\n", color=(1, 1, 1), pos=(0.0, 11.0),
-                               colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center", wrapWidth=500)
-        text_stim2 = visual.TextStim(self.win, text=self.categories[n],  color=(1, -0.7, -0.7), pos=(0.0, -1.0),
-                                colorSpace='rgb', bold=True, height=5, anchorHoriz="center", wrapWidth=500)
+        text_stim = visual.TextStim(self.win, text="Please draw with your finger the...\n", color=(1, 1, 1), pos=(0.0, 9.0*(self.widthPix/1920)),
+                               colorSpace='rgb', bold=False, height=2.0*(self.widthPix/1920), anchorHoriz="center", wrapWidth=500)
+        text_stim2 = visual.TextStim(self.win, text=self.categories[n],  color=(1, -0.7, -0.7), pos=(0.0, -1.0*(self.widthPix/1920)),
+                                colorSpace='rgb', bold=True, height=3.5*(self.widthPix/1920), anchorHoriz="center", wrapWidth=350*(self.widthPix/1920))
         text_stim.draw()
         text_stim2.draw()
         self.win.flip()
@@ -400,15 +477,17 @@ class socialDrawingTask(yarp.RFModule):
 
     def category_trial_request(self):
 
-        text_stim = visual.TextStim(self.win, text="Please draw with your finger the...\n", color=(1, 1, 1), pos=(0.0, 11.0),
-                               colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center", wrapWidth=500)
-        text_stim2 = visual.TextStim(self.win, text="Scissors",  color=(1, -0.7, -0.7), pos=(0.0, -1.0),
-                                colorSpace='rgb', bold=True, height=5, anchorHoriz="center", wrapWidth=500)
+        text_stim = visual.TextStim(self.win, text="Please draw with your finger the...\n", color=(1, 1, 1), pos=(0.0, 9.0*(self.widthPix/1920)),
+                               colorSpace='rgb', bold=False, height=2.0*(self.widthPix/1920), anchorHoriz="center", wrapWidth=350*(self.widthPix/1920))
+        text_stim2 = visual.TextStim(self.win, text="Scissors",  color=(1, -0.7, -0.7), pos=(0.0, -1.0*(self.widthPix/1920)),
+                                colorSpace='rgb', bold=True, height=3.5*(self.widthPix/1920), anchorHoriz="center", wrapWidth=350*(self.widthPix/1920))
         text_stim.draw()
         text_stim2.draw()
         self.win.flip()
 
         time.sleep(4)
+
+        self.launch_drawing_trial()
 
         return
 
@@ -417,8 +496,24 @@ class socialDrawingTask(yarp.RFModule):
 
         self.win.close()
 
-        p = subprocess.Popen(["python3", self.drawing_trial_path()])
+        if self.output_port.getOutputCount():
+            info_out = self.output_port.prepare()
+            info_out.clear()
+            info_out.addString("start")
+        self.output_port.write()
+
+        print("I'VE WRITTEN START ON THE PORT")
+
+        p = subprocess.Popen(["python3", self.drawing_trial_path, str(self.widthPix), str(self.heightPix)])
         p.wait()
+
+        if self.output_port.getOutputCount():
+            info_out = self.output_port.prepare()
+            info_out.clear()
+            info_out.addString("stop")
+        self.output_port.write()
+
+        print("I'VE WRITTEN STOP ON THE PORT")
 
         self.configuration_window()
         return
@@ -440,6 +535,7 @@ class socialDrawingTask(yarp.RFModule):
         time.sleep(0.5)
         buttons = self.myMouse.getPressed()
         self.myMouse.clickReset(buttons)
+
         self.blue_window()
 
 
@@ -465,7 +561,7 @@ class socialDrawingTask(yarp.RFModule):
                                      " how many of them do you think will draw better than you? \n "
                                      "(0% - almost no one, 100% - almost everyone)", 10)
 
-        ouch = False
+        touch = False
 
         while touch == False:
             for k in range(0, 11):
@@ -500,7 +596,9 @@ class socialDrawingTask(yarp.RFModule):
             info_out.addString("start")
         self.output_port.write()
 
-        p = subprocess.Popen(["python3", self.drawing_path, str(n), self.participant_path], stdout=subprocess.PIPE)
+        print("I'VE WRITTEN START ON THE PORT")
+
+        p = subprocess.Popen(["python3", self.drawing_path, self.categories[n], self.participant_path, str(self.widthPix), str(self.heightPix), self.condition, self.country, self.experiment_dir], stdout=subprocess.PIPE)
         p.wait()
 
         if self.output_port.getOutputCount():
@@ -508,6 +606,8 @@ class socialDrawingTask(yarp.RFModule):
             info_out.clear()
             info_out.addString("stop")
         self.output_port.write()
+
+        print("I'VE WRITTEN STOP ON THE PORT")
 
         output = []
         output = p.stdout.read()
@@ -565,9 +665,8 @@ class socialDrawingTask(yarp.RFModule):
         self.myMouse.clickReset(buttons)
         self.blue_window()
 
-
-        self.text_multiple_buttons_screen("How much do you like your drawing of the " + self.categories[n] + "? \n"
-                            "(1 - not liked, 7 - liked a lot)", 7)
+        self.text_multiple_buttons_and_image_screen("How much do you like your drawing of the " + self.categories[n] + "? \n"
+                            "(1 - not liked, 7 - liked a lot)", 7, n)
 
         touch = False
 
@@ -586,6 +685,79 @@ class socialDrawingTask(yarp.RFModule):
 
         return
 
+    def save_art(self):
+
+        artistic_data = {
+                            'Participant_ID': self.participant_name,
+                            'Country': self.country,
+                            'Condition': self.condition,
+                            'Artistic_enjoyment': self.drawing_enjoyment,
+                            'Artistic_frequency': self.drawing_frequency,
+                            'Artistic_percentage': self.drawing_percentage,
+                            'Average_latency_time': np.mean(self.latency_time),
+                            'Average_total_time': np.mean(self.total_drawing_time),
+                            'Average_number_strokes': np.mean(self.number_of_strokes),
+                            'Average_enjoyment_ranking': np.mean(self.enjoyment_ranking),
+                            'Average_difficulty_ranking': np.mean(self.difficulty_ranking),
+                            'Average_likeability_ranking': np.mean(self.likeability_ranking)
+                        }
+
+        if os.path.isfile(self.artistic_skills_path):
+            with open(self.artistic_skills_path) as f:
+                data = []
+                reader = ndjson.reader(f)
+                for i in reader:
+                    data.append(i)
+            data.append(artistic_data)
+
+            # Writing items to a ndjson file
+            with open(self.artistic_skills_path, 'w') as f:
+                writer = ndjson.writer(f, ensure_ascii=False)
+                for d in data:
+                    writer.writerow(d)
+
+        else:
+            open(self.code_path, "x")
+            with open(self.artistic_skills_path, "w") as file:
+                ndjson.dump(artistic_data, file)
+
+        return
+
+    def save_rankings(self, n):
+
+        path_var = self.images_dir+"/"+str(self.categories[n])+"_experiment.ndjson"
+
+        ranking_data = {
+            'Participant_ID': self.participant_name,
+            'Country': self.country,
+            'Condition': self.condition,
+            'Latency_time': self.latency_time[n],
+            'Total_time': self.total_drawing_time[n],
+            'Number_of_Strokes': self.number_of_strokes[n],
+            'Enjoyment_ranking': self.enjoyment_ranking[n],
+            'Difficulty_ranking': self.difficulty_ranking[n],
+            'Likeability_ranking': self.likeability_ranking[n]
+        }
+
+        if os.path.isfile(path_var):
+            with open(path_var) as f:
+                data = []
+                reader = ndjson.reader(f)
+                for i in reader:
+                    data.append(i)
+            data.append(ranking_data)
+
+            # Writing items to a ndjson file
+            with open(path_var, 'w') as f:
+                writer = ndjson.writer(f, ensure_ascii=False)
+                for d in data:
+                    writer.writerow(d)
+
+        else:
+            open(path_var, "x")
+            with open(path_var, "w") as file:
+                ndjson.dump(ranking_data, file)
+        return
 
 if __name__ == '__main__':
 
