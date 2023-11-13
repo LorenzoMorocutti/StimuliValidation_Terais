@@ -13,42 +13,54 @@ import subprocess
 #from statemachine import StateMachine, State
 import csv
 from datetime import datetime
+import json
+import ndjson
+#from nico.main import startup, setmode, shutdown
 
 participant = sys.argv[1]
+country = sys.argv[2]
+condition = sys.argv[3]
 
-#change this path to the/folder/in/which/you/clonated/Images 
-images_dir = "/home/cmazzola/Documents/Projects/Shared_Drawing/Stimuli Validation/Terais-main/Images/"
-
-#change this path to the/folder/in/which/you/clonated/drawing.py
-script_path = "/home/cmazzola/Documents/Projects/Shared_Drawing/Stimuli Validation/Terais-main/drawing.py"
-script_path_trial = "/home/cmazzola/Documents/Projects/Shared_Drawing/Stimuli Validation/Terais-main/drawing_trial.py"
+code_path = "/usr/local/src/robot/cognitiveinteraction/stimuli_validation/"
+images_dir = code_path+"Images/"
+experiment_dir = images_dir + "Experiments/"
+script_path = code_path + "drawing.py"
+script_path_trial = code_path + "drawing_trial.py"
 
 if os.path.isdir(images_dir):
     print("folder already exist")
 else:
     os.mkdir(images_dir)
+    os.mkdir(experiment_dir)
 
-
+####### CHANGE THE PATH
 now = datetime.now()
-date_hour = now.strftime("_%d-%m-%Y_%H:%M:%S")
+date_hour = now.strftime("_%d-%m-%Y_%H-%M-%S")
 participant_dir = participant + str(date_hour)
 path_folder_participant = images_dir + participant_dir
 os.mkdir(path_folder_participant)
 
-seq_strokes = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29]
-num_strokes = {'stroke_n': seq_strokes}
-
-strokes_file = path_folder_participant+"/strokes.csv"
-
-if os.path.isfile(strokes_file):
-    print("file already exist")
-else:
-    f = open(strokes_file, "x")
-    df_init = pd.DataFrame(num_strokes)
-    df_init.to_csv(strokes_file, mode='w', index=False, header=True)
-
 dels_file = path_folder_participant + "/dels.csv"
 f = open(dels_file, "x")
+
+art_data_path = code_path + "art_data.csv"
+rank_data_path = code_path + "rank_data.csv"
+time_data_path = code_path + "time_data.csv"
+
+if os.path.isfile(art_data_path):
+    print("already exist")
+else:
+    f = open(art_data_path, "x")
+
+if os.path.isfile(rank_data_path):
+    print("already exist")
+else:
+    f = open(rank_data_path, "x")
+
+if os.path.isfile(time_data_path):
+    print("already exist")
+else:
+    f = open(time_data_path, "x")
 
 
 
@@ -67,24 +79,63 @@ button = []
 
 global win
 
-drawing_enjoyment = 0
-drawing_frequency = 0
-drawing_percentage = 0
+####### CHANGE THE PATH
 
-difficulty_ranking = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-enjoyment_ranking = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-likeability_ranking = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+drawing_enjoyment = 0.0
+drawing_frequency = 0.0
+drawing_percentage = 0.0
 
-latency_time = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-total_drawing_time = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-number_of_strokes = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+difficulty_ranking = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+enjoyment_ranking = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+likeability_ranking = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+latency_time = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+total_drawing_time = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+number_of_strokes = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 
+
+def save_rankings(n):
+
+    path_var = images_dir + "/" + str(categories[n]) + "_quantitative_data.ndjson"
+
+    ranking_data = {
+        'Participant_ID': participant,
+        'Country': country,
+        'Condition': condition,
+        'Latency_time': latency_time[n],
+        'Total_time': total_drawing_time[n],
+        'Number_of_Strokes': number_of_strokes[n],
+        'Enjoyment_ranking': enjoyment_ranking[n],
+        'Difficulty_ranking': difficulty_ranking[n],
+        'Likeability_ranking': likeability_ranking[n]
+    }
+
+    if os.path.isfile(path_var):
+        with open(path_var) as f:
+            data = []
+            reader = ndjson.reader(f)
+            for i in reader:
+                data.append(i)
+        data.append(ranking_data)
+
+        # Writing items to a ndjson file
+        with open(path_var, 'w') as f:
+            writer = ndjson.writer(f, ensure_ascii=False)
+            for d in data:
+                writer.writerow(d)
+
+    else:
+        open(path_var, "x")
+        with open(path_var, "w") as file:
+            json.dump(ranking_data, file)
+
+    return
 def drawing_questions(n):
     text = visual.TextStim(win, text="How difficult it was to draw the " + categories[n] + "? \n"
                             "(1 - not difficult, 7 - extremely difficult)", color=(1, 1, 1),
-                           pos=(0.0, 11.0), colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center",
-                           wrapWidth=500)
+                           pos=(0.0, 11.0), colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center",
+                           wrapWidth=400)
     text.draw()
 
     space = 0
@@ -117,8 +168,8 @@ def drawing_questions(n):
 
     text = visual.TextStim(win, text="How much did you enjoy drawing the " + categories[n] + "? \n"
                             "(1 - not enjoyed, 7 - extremely enjoyed)",
-                           color=(1, 1, 1), pos=(0.0, 11.0), colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center",
-                           wrapWidth=500)
+                           color=(1, 1, 1), pos=(0.0, 11.0), colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center",
+                           wrapWidth=400)
     text.draw()
 
     space = 0
@@ -151,8 +202,8 @@ def drawing_questions(n):
 
     text = visual.TextStim(win, text="How much do you like your drawing of the " + categories[n] + "? \n"
                             "(1 - not liked, 7 - liked a lot)",
-                           color=(1, 1, 1), pos=(0.0, 15.0), colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center",
-                           wrapWidth=500)
+                           color=(1, 1, 1), pos=(0.0, 15.0), colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center",
+                           wrapWidth=400)
     text.draw()
 
 
@@ -186,6 +237,7 @@ def drawing_questions(n):
     myMouse.clickReset(buttons)
     
     blue_window()
+    save_rankings(n)
 
 
     return
@@ -193,10 +245,12 @@ def drawing_questions(n):
 
 def drawing_activity(i):
 
+    #setmode(0)
+
     win.close()
     print("window closed, ready to open drawing")
 
-    p = subprocess.Popen(["python3", script_path, str(i), participant_dir], stdout=subprocess.PIPE)
+    p = subprocess.Popen(["python3", script_path, categories[i], path_folder_participant, condition, country, experiment_dir], stdout=subprocess.PIPE)
     p.wait()
 
     output = []
@@ -210,11 +264,12 @@ def drawing_activity(i):
     total_drawing_time[i] = array[1]
     number_of_strokes[i] = array[2]
 
+    #setmode(2)
 
     configure()
 
     text = visual.TextStim(win, text="Now please answer to some questions.", color=(1, 1, 1), pos=(0.0, 11.0),
-                           colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center", wrapWidth=500)
+                           colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center", wrapWidth=400)
     text.draw()
     
     button = visual.ButtonStim(win, text="Click to continue", color=[1, 1, 1], colorSpace='rgb', fillColor=[-0.3, -0.3, -0.3],
@@ -236,8 +291,10 @@ def drawing_activity(i):
 
 def drawing_task(n):
 
+    #setmode(1)
+
     text = visual.TextStim(win, text="Are you ready to draw?", color=(1, 1, 1), pos=(0.0, 11.0),
-                           colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center", wrapWidth=500)
+                           colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center", wrapWidth=400)
     text.draw()
     
     button = visual.ButtonStim(win, text="Click to continue", color=[1, 1, 1], colorSpace='rgb', fillColor=[-0.3, -0.3, -0.3],
@@ -258,10 +315,10 @@ def drawing_task(n):
 
 
     text = visual.TextStim(win, text="Please draw with your finger the...\n", color=(1, 1, 1), pos=(0.0, 11.0),
-                           colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center", wrapWidth=500)
+                           colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center", wrapWidth=400)
 
     text2 = visual.TextStim(win, text=categories[n], color=(1, -0.7, -0.7), pos=(0.0, -1.0),
-                           colorSpace='rgb', bold=True, height=5, anchorHoriz="center", wrapWidth=500)
+                           colorSpace='rgb', bold=True, height=4.5, anchorHoriz="center", wrapWidth=400)
 
     text.draw()
     text2.draw()
@@ -281,7 +338,7 @@ def artistic_questions():
     global drawing_enjoyment, drawing_frequency, drawing_percentage
 
     text = visual.TextStim(win, text="How much do you enjoy free-hand drawing? \n (1 - extremely little, 7 - extremely much)", color=(1, 1, 1),
-                           pos=(0.0, 11.0), colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center", wrapWidth=500)
+                           pos=(0.0, 11.0), colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center", wrapWidth=400)
     text.draw()
 
     space = 0
@@ -312,7 +369,7 @@ def artistic_questions():
     blue_window()
 
     text = visual.TextStim(win, text="How often do you draw sketches? \n (1 - extremely little, 7 - extremely much)", color=(1, 1, 1),
-                           pos=(0.0, 11.0), colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center", wrapWidth=500)
+                           pos=(0.0, 11.0), colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center", wrapWidth=400)
     text.draw()
 
     space = 0
@@ -345,8 +402,8 @@ def artistic_questions():
     text = visual.TextStim(win, text="Imagine other 100 people drawing the same sketches as yours: \n"
                                      " how many of them do you think will draw better than you? \n "
                                      "(0% - almost no one, 100% - almost everyone)",
-                           color=(1, 1, 1), pos=(0.0, 11.0), colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center",
-                           wrapWidth=500)
+                           color=(1, 1, 1), pos=(0.0, 11.0), colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center",
+                           wrapWidth=400)
     text.draw()
 
     space = 0
@@ -387,7 +444,7 @@ def blue_window():
     blue_poly = visual.Polygon(win, edges=4, fillColor=[-0.4, -0.4, 1], colorSpace='rgb', pos=[0, 0], size=[4000, 4000], units='pix', ori=0)
     blue_poly.draw()
     win.flip()  # show the stim
-    time.sleep(0.001)
+    time.sleep(0.1)
 
     return
 
@@ -413,9 +470,11 @@ def configure():
     widthPix = 1920
     heightPix = 1080
     monitorWidth = 50.2
+    #monitorWidth = 30.9
     viewdist = 25.4
     monitorname = 'testMonitor'
-    scrn = 0
+    scrn = 1
+
     mon = monitors.Monitor(monitorname, width=monitorWidth, distance=viewdist)
     mon.setSizePix((widthPix, heightPix))
 
@@ -426,25 +485,31 @@ def configure():
         colorSpace='rgb',
         units='deg',
         screen=scrn,
-        allowGUI=False,
+        allowGUI=True,
         fullscr=True
     )
 
     myMouse = event.Mouse(win)
-    myMouse.setPos(newPos=(0, 0))
+    #myMouse.setPos(newPos=(300, 300))
 
     return
 
 
 
 def main():
+
+    subprocess.run(["xrandr", "--output", "eDP", "--off"])
+
+    #startup()
     
     configure()
+
+    #setmode(1)
 
     text = visual.TextStim(win, text="Welcome!\nThis is a first trial to help\n"
                                      "you understand how the drawing activity will work."
                                      , color=(1, 1, 1), pos=(0.0, 11.0),
-                           colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center", wrapWidth=500)
+                           colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center", wrapWidth=400)
     text.draw()
 
     button = visual.ButtonStim(win, text="Click to continue", color=[1, 1, 1], colorSpace='rgb',
@@ -454,16 +519,20 @@ def main():
 
     win.flip()
 
+
     touch = False
 
     while touch == False:
+        #print(myMouse.isPressedIn(button))
+
         if myMouse.isPressedIn(button):
+            print(myMouse.isPressedIn(button))
             touch = True
 
     text = visual.TextStim(win, text="When you are ready, press the button and\n"
                                      "a subject to be drawn will appear on the screen."
                                      , color=(1, 1, 1), pos=(0.0, 11.0),
-                           colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center", wrapWidth=500)
+                           colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center", wrapWidth=400)
     text.draw()
 
     button = visual.ButtonStim(win, text="Click to continue", color=[1, 1, 1], colorSpace='rgb',
@@ -481,30 +550,33 @@ def main():
 
 
     text = visual.TextStim(win, text="Please draw with your finger the...\n", color=(1, 1, 1), pos=(0.0, 11.0),
-                           colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center", wrapWidth=500)
+                           colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center", wrapWidth=400)
 
     text2 = visual.TextStim(win, text="Scissors", color=(1, -0.7, -0.7), pos=(0.0, -1.0),
-                            colorSpace='rgb', bold=True, height=5, anchorHoriz="center", wrapWidth=500)
+                            colorSpace='rgb', bold=True, height=4.5, anchorHoriz="center", wrapWidth=400)
 
     text.draw()
     text2.draw()
 
     win.flip()
 
-    time.sleep(4)
+    # setmode(0)
 
+    time.sleep(4)
 
     win.close()
 
     p = subprocess.Popen(["python3", script_path_trial])
     p.wait()
 
+    #setmode(1)
+
     configure()
 
     text = visual.TextStim(win, text="Great!\n Is everything clear? Then you can\n"
                                      "proceed with the actual experiment."
                            , color=(1, 1, 1), pos=(0.0, 11.0),
-                           colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center", wrapWidth=500)
+                           colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center", wrapWidth=400)
     text.draw()
 
     button = visual.ButtonStim(win, text="Click to continue", color=[1, 1, 1], colorSpace='rgb',
@@ -526,7 +598,7 @@ def main():
                                      "and then answer some simple questions.\n"
                                      "Are you ready? "
                                      , color=(1, 1, 1), pos=(0.0, 11.0),
-                           colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center", wrapWidth=500)
+                           colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center", wrapWidth=400)
     text.draw()
     
     button = visual.ButtonStim(win, text="Click to continue", color=[1, 1, 1], colorSpace='rgb', fillColor=[-0.3, -0.3, -0.3],
@@ -541,10 +613,15 @@ def main():
         if myMouse.isPressedIn(button):
             touch=True
 
+    #setmode(2)
+
     artistic_questions()
 
     for i in seq:
         drawing_task(i)
+
+
+
 
     art_results = {
         'art_enjoyment': drawing_enjoyment,
@@ -685,34 +762,75 @@ def main():
         'PalmThree': [[difficulty_ranking[16], enjoyment_ranking[16], likeability_ranking[16], number_of_strokes[16]]]
     }
 
+
     # Create a data frame from the results
     df_art = pd.DataFrame(art_results, index=[participant])
 
-    df_art.to_csv('art_data.csv', mode='a', header=True)
+    df_art.to_csv(art_data_path, mode='a', header=True)
 
     # Create a data frame from the results
     df_rank = pd.DataFrame(rank_results, index=[participant])
 
-    df_rank.to_csv('rank_data.csv', mode='a', header=True)
+    df_rank.to_csv(rank_data_path, mode='a', header=True)
 
     # Create a data frame from the results
     df_time = pd.DataFrame(time_stroke_results, index=[participant])
 
-    df_time.to_csv('time_data.csv', mode='a', header=True)
+    df_time.to_csv(time_data_path, mode='a', header=True)
 
     # Create a data frame with all the info about difficulty, enjoyment etc.
     df_dels = pd.DataFrame(dels_data)
 
     df_dels.to_csv(dels_file, mode='w', header=True)
 
+    path_var = code_path + "/artistic_skills.ndjson"
 
+    artistic_data = {
+        'Participant_ID': participant,
+        'Country': country,
+        'Condition': condition,
+        'Artistic_enjoyment': drawing_enjoyment,
+        'Artistic_frequency': drawing_frequency,
+        'Artistic_percentage': drawing_percentage,
+        'Average_latency_time': np.mean(latency_time),
+        'Average_total_time': np.mean(total_drawing_time),
+        'Average_number_strokes': np.mean(number_of_strokes),
+        'Average_enjoyment_ranking': np.mean(enjoyment_ranking),
+        'Average_difficulty_ranking': np.mean(difficulty_ranking),
+        'Average_likeability_ranking': np.mean(likeability_ranking)
+    }
+
+    if os.path.isfile(path_var):
+        with open(path_var) as f:
+            data = []
+            reader = ndjson.reader(f)
+            for i in reader:
+                data.append(i)
+        data.append(artistic_data)
+
+        # Writing items to a ndjson file
+        with open(path_var, 'w') as f:
+            writer = ndjson.writer(f, ensure_ascii=False)
+            for d in data:
+                writer.writerow(d)
+
+    else:
+        open(path_var, "x")
+        with open(path_var, "w") as file:
+            json.dump(artistic_data, file)
+
+
+
+    #setmode(1)
 
     text = visual.TextStim(win, text="Thank you very much!", color=(1, 1, 1), pos=(0.0, 11.0),
-                           colorSpace='rgb', bold=False, height=3.5, anchorHoriz="center", wrapWidth=500)
+                           colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center", wrapWidth=400)
     text.draw()
     win.flip()
 
     wait_touch()
+    
+    subprocess.run(["xrandr", "--output", "eDP", "--mode", "1920x1080", "--panning", "1920x1080", "--pos", "1920x0", "--primary"])
 
 if __name__ == '__main__':
     main()
