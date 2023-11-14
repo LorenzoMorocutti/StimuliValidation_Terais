@@ -159,7 +159,7 @@ def drawing_questions(n):
                 touch = True
 
     button.clear()
-    time.sleep(0.5)
+    time.sleep(0.2)
     buttons = myMouse.getPressed()
     myMouse.clickReset(buttons)
     
@@ -193,7 +193,7 @@ def drawing_questions(n):
                 touch = True
 
     button.clear()
-    time.sleep(0.5)
+    time.sleep(0.2)
     buttons = myMouse.getPressed()
     myMouse.clickReset(buttons)
     
@@ -232,7 +232,7 @@ def drawing_questions(n):
                 touch = True
 
     button.clear()
-    time.sleep(0.5)
+    time.sleep(0.2)
     buttons = myMouse.getPressed()
     myMouse.clickReset(buttons)
     
@@ -309,7 +309,7 @@ def drawing_task(n):
         if myMouse.isPressedIn(button):
             touch=True
 
-    time.sleep(0.5)
+    time.sleep(0.2)
     buttons = myMouse.getPressed()
     myMouse.clickReset(buttons)
 
@@ -362,7 +362,7 @@ def artistic_questions():
                 touch = True
 
     button.clear()
-    time.sleep(0.5)
+    time.sleep(0.2)
     buttons = myMouse.getPressed()
     myMouse.clickReset(buttons)
     
@@ -393,7 +393,7 @@ def artistic_questions():
                 touch = True
 
     button.clear()
-    time.sleep(0.5)
+    time.sleep(0.2)
     buttons = myMouse.getPressed()
     myMouse.clickReset(buttons)
     
@@ -401,41 +401,41 @@ def artistic_questions():
 
     text = visual.TextStim(win, text="Imagine other 100 people drawing the same sketches as yours: \n"
                                      " how many of them do you think will draw better than you? \n "
-                                     "(0% - almost no one, 100% - almost everyone)",
+                                     "(click on the slider and then drag the marker)",
                            color=(1, 1, 1), pos=(0.0, 11.0), colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center",
                            wrapWidth=400)
     text.draw()
 
-    space = 0
+    button_continue = visual.ButtonStim(win, text="Click to continue", color=[1, 1, 1], colorSpace='rgb',
+                               fillColor=[-0.3, -0.3, -0.3],
+                               pos=[0, -350], size=(400, 150), units='pix')
+    button_continue.draw()
 
-    button.append(visual.ButtonStim(win, text="0%", color=[1, 1, 1], colorSpace='rgb', fillColor=[-0.3, -0.3, -0.3],
-                                    pos=[-800, -250], size=(100, 100), units='pix'))
+    slider = visual.Slider(win, ticks=(0, 100), labels=(0, 100), granularity=0.1, pos=(0, -100), size=(1000, 50),
+                           units='pix')
 
-    for i in range(0, 10):
-
-        button.append(visual.ButtonStim(win, text=number[i]+"0%", color=[1, 1, 1], colorSpace='rgb', fillColor=[-0.3, -0.3, -0.3],
-                              pos=[-640 + space, -250], size=(100, 100), units='pix'))
-        space += 160
-
-    for j in range(0, 11):
-        button[j].draw()
-
+    print(slider.markerPos)
+    slider.setMarkerPos(200)
+    slider.getMouseResponses()
+    # slider.getRating()
+    slider.setReadOnly(False, log=None)
+    slider.draw()
     win.flip()
 
     touch = False
 
     while touch == False:
-        for k in range(0, 11):
-            if myMouse.isPressedIn(button[k]):
-                drawing_percentage = k*10
-                touch = True
+        if slider.getMouseResponses():
+            rating = slider.getRating()
+            slider.setMarkerPos(rating)
+            button_continue.draw()
+            text.draw()
+            slider.draw()
+            win.flip()
 
-
-    button.clear()
-    time.sleep(0.5)
-    buttons = myMouse.getPressed()
-    myMouse.clickReset(buttons)
-
+        if myMouse.isPressedIn(button):
+            drawing_percentage = rating
+            touch = True
 
     return
 
@@ -498,7 +498,7 @@ def configure():
 
 def main():
 
-    subprocess.run(["xrandr", "--output", "eDP", "--off"])
+    #subprocess.run(["xrandr", "--output", "eDP", "--off"])
 
     #startup()
     
@@ -830,7 +830,7 @@ def main():
 
     wait_touch()
     
-    subprocess.run(["xrandr", "--output", "eDP", "--mode", "1920x1080", "--panning", "1920x1080", "--pos", "1920x0", "--primary"])
+    #subprocess.run(["xrandr", "--output", "eDP", "--mode", "1920x1080", "--panning", "1920x1080", "--pos", "1920x0", "--primary"])
 
 if __name__ == '__main__':
     main()
