@@ -15,11 +15,18 @@ import csv
 from datetime import datetime
 import json
 import ndjson
-#from nico.main import startup, setmode, shutdown
+from nico.main import startup, setmode, shutdown
+from nico.speak import speak
+
 
 participant = sys.argv[1]
 country = sys.argv[2]
 condition = sys.argv[3]
+
+startup()
+
+input("Press Enter to continue...")
+
 
 code_path = "/usr/local/src/robot/cognitiveinteraction/stimuli_validation/"
 images_dir = code_path+"Images/"
@@ -245,7 +252,7 @@ def drawing_questions(n):
 
 def drawing_activity(i):
 
-    #setmode(0)
+    setmode(0)
 
     win.close()
     print("window closed, ready to open drawing")
@@ -264,7 +271,7 @@ def drawing_activity(i):
     total_drawing_time[i] = array[1]
     number_of_strokes[i] = array[2]
 
-    #setmode(2)
+    setmode(2)
 
     configure()
 
@@ -291,7 +298,7 @@ def drawing_activity(i):
 
 def drawing_task(n):
 
-    #setmode(1)
+    setmode(1)
 
     text = visual.TextStim(win, text="Are you ready to draw?", color=(1, 1, 1), pos=(0.0, 11.0),
                            colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center", wrapWidth=400)
@@ -499,12 +506,10 @@ def configure():
 def main():
 
     #subprocess.run(["xrandr", "--output", "eDP", "--off"])
-
-    #startup()
     
     configure()
 
-    #setmode(1)
+    setmode(1)
 
     text = visual.TextStim(win, text="Welcome!\nThis is a first trial to help\n"
                                      "you understand how the drawing activity will work."
@@ -560,16 +565,16 @@ def main():
 
     win.flip()
 
-    # setmode(0)
-
     time.sleep(4)
+
+    setmode(0)
 
     win.close()
 
     p = subprocess.Popen(["python3", script_path_trial])
     p.wait()
 
-    #setmode(1)
+    setmode(1)
 
     configure()
 
@@ -613,7 +618,7 @@ def main():
         if myMouse.isPressedIn(button):
             touch=True
 
-    #setmode(2)
+    setmode(2)
 
     artistic_questions()
 
