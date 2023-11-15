@@ -15,15 +15,15 @@ import csv
 from datetime import datetime
 import json
 import ndjson
-from nico.main import startup, setmode, shutdown
-from nico.speak import speak
+#from nico.main import startup, setmode, shutdown
+#from nico.speak import speak
 
 
 participant = sys.argv[1]
 country = sys.argv[2]
 condition = sys.argv[3]
 
-startup()
+#startup()
 
 input("Press Enter to continue...")
 
@@ -145,30 +145,35 @@ def drawing_questions(n):
                            wrapWidth=400)
     text.draw()
 
-    space = 0
+    button_continue = visual.ButtonStim(win, text="Click to continue", color=[1, 1, 1], colorSpace='rgb',
+                                        fillColor=[-0.3, -0.3, -0.3],
+                                        pos=[0, -350], size=(400, 150), units='pix')
+    #button_continue.draw()
 
-    for i in range(0, 7):
-        button.append(visual.ButtonStim(win, text=number[i], color=[1, 1, 1], colorSpace='rgb', fillColor=[-0.3, -0.3, -0.3],
-                              pos=[-720 + space, -250], size=(100, 100), units='pix'))
-        space += 240
+    slider = visual.Slider(win, ticks=(0, 100), labels=(0, 100), granularity=0.1, pos=(0, -100), size=(1000, 50),
+                           units='pix')
 
-    for j in range(0, 7):
-        button[j].draw()
-
+    slider.setMarkerPos(200)
+    slider.getMouseResponses()
+    slider.setReadOnly(False, log=None)
+    slider.draw()
     win.flip()
 
     touch = False
+    print(slider.markerPos)
 
     while touch == False:
-        for k in range(0, 7):
-            if myMouse.isPressedIn(button[k]):
-                difficulty_ranking[n] = k + 1
-                touch = True
+        if slider.getMouseResponses():
+            rating = slider.getRating()
+            slider.setMarkerPos(rating)
+            button_continue.draw()
+            text.draw()
+            slider.draw()
+            win.flip()
 
-    button.clear()
-    time.sleep(0.2)
-    buttons = myMouse.getPressed()
-    myMouse.clickReset(buttons)
+        if myMouse.isPressedIn(button_continue):
+            difficulty_ranking[n] = rating
+            touch = True
     
     blue_window()
 
@@ -179,30 +184,36 @@ def drawing_questions(n):
                            wrapWidth=400)
     text.draw()
 
-    space = 0
+    button_continue = visual.ButtonStim(win, text="Click to continue", color=[1, 1, 1], colorSpace='rgb',
+                                        fillColor=[-0.3, -0.3, -0.3],
+                                        pos=[0, -350], size=(400, 150), units='pix')
+    #button_continue.draw()
 
-    for i in range(0, 7):
-        button.append(visual.ButtonStim(win, text=number[i], color=[1, 1, 1], colorSpace='rgb', fillColor=[-0.3, -0.3, -0.3],
-                              pos=[-720 + space, -250], size=(100, 100), units='pix'))
-        space += 240
+    slider = visual.Slider(win, ticks=(0, 100), labels=(0, 100), granularity=0.1, pos=(0, -100), size=(1000, 50),
+                           units='pix')
 
-    for j in range(0, 7):
-        button[j].draw()
 
+    slider.setMarkerPos(200)
+    slider.getMouseResponses()
+    slider.setReadOnly(False, log=None)
+    slider.draw()
     win.flip()
 
     touch = False
+    print(slider.markerPos)
 
     while touch == False:
-        for k in range(0, 7):
-            if myMouse.isPressedIn(button[k]):
-                enjoyment_ranking[n] = k + 1
-                touch = True
+        if slider.getMouseResponses():
+            rating = slider.getRating()
+            slider.setMarkerPos(rating)
+            button_continue.draw()
+            text.draw()
+            slider.draw()
+            win.flip()
 
-    button.clear()
-    time.sleep(0.2)
-    buttons = myMouse.getPressed()
-    myMouse.clickReset(buttons)
+        if myMouse.isPressedIn(button_continue):
+            enjoyment_ranking[n] = rating
+            touch = True
     
     blue_window()
 
@@ -218,30 +229,36 @@ def drawing_questions(n):
                              units='pix', pos=(0.0, -5.0))
     image.draw()
 
-    space = 0
+    button_continue = visual.ButtonStim(win, text="Click to continue", color=[1, 1, 1], colorSpace='rgb',
+                                        fillColor=[-0.3, -0.3, -0.3],
+                                        pos=[0, -450], size=(400, 150), units='pix')
+    #button_continue.draw()
 
-    for i in range(0, 7):
-        button.append(visual.ButtonStim(win, text=number[i], color=[1, 1, 1], colorSpace='rgb', fillColor=[-0.3, -0.3, -0.3],
-                              pos=[-720 + space, -300], size=(100, 100), units='pix'))
-        space += 240
+    slider = visual.Slider(win, ticks=(0, 100), labels=(0, 100), granularity=0.1, pos=(0, -250), size=(1000, 50),
+                           units='pix')
 
-    for j in range(0, 7):
-        button[j].draw()
-
+    slider.setMarkerPos(200)
+    slider.getMouseResponses()
+    slider.setReadOnly(False, log=None)
+    slider.draw()
     win.flip()
 
     touch = False
+    print(slider.markerPos)
 
     while touch == False:
-        for k in range(0, 7):
-            if myMouse.isPressedIn(button[k]):
-                likeability_ranking[n] = k + 1
-                touch = True
+        if slider.getMouseResponses():
+            rating = slider.getRating()
+            slider.setMarkerPos(rating)
+            button_continue.draw()
+            text.draw()
+            image.draw()
+            slider.draw()
+            win.flip()
 
-    button.clear()
-    time.sleep(0.2)
-    buttons = myMouse.getPressed()
-    myMouse.clickReset(buttons)
+        if myMouse.isPressedIn(button_continue):
+            likeability_ranking[n] = rating
+            touch = True
     
     blue_window()
     save_rankings(n)
@@ -252,7 +269,7 @@ def drawing_questions(n):
 
 def drawing_activity(i):
 
-    setmode(0)
+    #setmode(0)
 
     win.close()
     print("window closed, ready to open drawing")
@@ -271,7 +288,7 @@ def drawing_activity(i):
     total_drawing_time[i] = array[1]
     number_of_strokes[i] = array[2]
 
-    setmode(2)
+    #setmode(2)
 
     configure()
 
@@ -298,7 +315,7 @@ def drawing_activity(i):
 
 def drawing_task(n):
 
-    setmode(1)
+    #setmode(1)
 
     text = visual.TextStim(win, text="Are you ready to draw?", color=(1, 1, 1), pos=(0.0, 11.0),
                            colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center", wrapWidth=400)
@@ -348,30 +365,35 @@ def artistic_questions():
                            pos=(0.0, 11.0), colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center", wrapWidth=400)
     text.draw()
 
-    space = 0
+    button_continue = visual.ButtonStim(win, text="Click to continue", color=[1, 1, 1], colorSpace='rgb',
+                                        fillColor=[-0.3, -0.3, -0.3],
+                                        pos=[0, -350], size=(400, 150), units='pix')
+    #button_continue.draw()
 
-    for i in range(0, 7):
-        button.append(visual.ButtonStim(win, text=number[i], color=[1, 1, 1], colorSpace='rgb', fillColor=[-0.3, -0.3, -0.3],
-                        pos=[-720 + space, -250], size=(100, 100), units='pix'))
-        space += 240
+    slider = visual.Slider(win, ticks=(0, 100), labels=(0, 100), granularity=0.1, pos=(0, -100), size=(1000, 50),
+                           units='pix')
 
-    for j in range(0, 7):
-        button[j].draw()
-
+    slider.setMarkerPos(200)
+    slider.getMouseResponses()
+    slider.setReadOnly(False, log=None)
+    slider.draw()
     win.flip()
 
     touch = False
+    print(slider.markerPos)
 
     while touch == False:
-        for k in range(0, 7):
-            if myMouse.isPressedIn(button[k]):
-                drawing_enjoyment = k+1
-                touch = True
+        if slider.getMouseResponses():
+            rating = slider.getRating()
+            slider.setMarkerPos(rating)
+            button_continue.draw()
+            text.draw()
+            slider.draw()
+            win.flip()
 
-    button.clear()
-    time.sleep(0.2)
-    buttons = myMouse.getPressed()
-    myMouse.clickReset(buttons)
+        if myMouse.isPressedIn(button_continue):
+            drawing_enjoyment = rating
+            touch = True
     
     blue_window()
 
@@ -379,30 +401,36 @@ def artistic_questions():
                            pos=(0.0, 11.0), colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center", wrapWidth=400)
     text.draw()
 
-    space = 0
+    button_continue = visual.ButtonStim(win, text="Click to continue", color=[1, 1, 1], colorSpace='rgb',
+                                        fillColor=[-0.3, -0.3, -0.3],
+                                        pos=[0, -350], size=(400, 150), units='pix')
+    #button_continue.draw()
 
-    for i in range(0, 7):
-        button.append(visual.ButtonStim(win, text=number[i], color=[1, 1, 1], colorSpace='rgb', fillColor=[-0.3, -0.3, -0.3],
-                        pos=[-720 + space, -250], size=(100, 100), units='pix'))
-        space += 240
+    slider = visual.Slider(win, ticks=(0, 100), labels=(0, 100), granularity=0.1, pos=(0, -100), size=(1000, 50),
+                           units='pix')
 
-    for j in range(0, 7):
-        button[j].draw()
 
+    slider.setMarkerPos(200)
+    slider.getMouseResponses()
+    slider.setReadOnly(False, log=None)
+    slider.draw()
     win.flip()
 
     touch = False
+    print(slider.markerPos)
 
     while touch == False:
-        for k in range(0, 7):
-            if myMouse.isPressedIn(button[k]):
-                drawing_frequency = k+1
-                touch = True
+        if slider.getMouseResponses():
+            rating = slider.getRating()
+            slider.setMarkerPos(rating)
+            button_continue.draw()
+            text.draw()
+            slider.draw()
+            win.flip()
 
-    button.clear()
-    time.sleep(0.2)
-    buttons = myMouse.getPressed()
-    myMouse.clickReset(buttons)
+        if myMouse.isPressedIn(button_continue):
+            drawing_frequency = rating
+            touch = True
     
     blue_window()
 
@@ -416,20 +444,19 @@ def artistic_questions():
     button_continue = visual.ButtonStim(win, text="Click to continue", color=[1, 1, 1], colorSpace='rgb',
                                fillColor=[-0.3, -0.3, -0.3],
                                pos=[0, -350], size=(400, 150), units='pix')
-    button_continue.draw()
+    #button_continue.draw()
 
     slider = visual.Slider(win, ticks=(0, 100), labels=(0, 100), granularity=0.1, pos=(0, -100), size=(1000, 50),
                            units='pix')
 
-    print(slider.markerPos)
     slider.setMarkerPos(200)
     slider.getMouseResponses()
-    # slider.getRating()
     slider.setReadOnly(False, log=None)
     slider.draw()
     win.flip()
 
     touch = False
+    print(slider.markerPos)
 
     while touch == False:
         if slider.getMouseResponses():
@@ -440,7 +467,7 @@ def artistic_questions():
             slider.draw()
             win.flip()
 
-        if myMouse.isPressedIn(button):
+        if myMouse.isPressedIn(button_continue):
             drawing_percentage = rating
             touch = True
 
@@ -480,7 +507,7 @@ def configure():
     #monitorWidth = 30.9
     viewdist = 25.4
     monitorname = 'testMonitor'
-    scrn = 1
+    scrn = 0
 
     mon = monitors.Monitor(monitorname, width=monitorWidth, distance=viewdist)
     mon.setSizePix((widthPix, heightPix))
@@ -509,7 +536,7 @@ def main():
     
     configure()
 
-    setmode(1)
+    #setmode(1)
 
     text = visual.TextStim(win, text="Welcome!\nThis is a first trial to help\n"
                                      "you understand how the drawing activity will work."
@@ -534,6 +561,8 @@ def main():
             print(myMouse.isPressedIn(button))
             touch = True
 
+    blue_window()
+
     text = visual.TextStim(win, text="When you are ready, press the button and\n"
                                      "a subject to be drawn will appear on the screen."
                                      , color=(1, 1, 1), pos=(0.0, 11.0),
@@ -553,6 +582,7 @@ def main():
         if myMouse.isPressedIn(button):
             touch = True
 
+    blue_window()
 
     text = visual.TextStim(win, text="Please draw with your finger the...\n", color=(1, 1, 1), pos=(0.0, 11.0),
                            colorSpace='rgb', bold=False, height=2.5, anchorHoriz="center", wrapWidth=400)
@@ -567,14 +597,14 @@ def main():
 
     time.sleep(4)
 
-    setmode(0)
+    #setmode(0)
 
     win.close()
 
     p = subprocess.Popen(["python3", script_path_trial])
     p.wait()
 
-    setmode(1)
+    #setmode(1)
 
     configure()
 
@@ -597,7 +627,7 @@ def main():
         if myMouse.isPressedIn(button):
             touch = True
 
-
+    blue_window()
 
     text = visual.TextStim(win, text="Welcome!\nWe will ask you to draw several pictures\n"
                                      "and then answer some simple questions.\n"
@@ -618,7 +648,8 @@ def main():
         if myMouse.isPressedIn(button):
             touch=True
 
-    setmode(2)
+    #setmode(2)
+    blue_window()
 
     artistic_questions()
 
