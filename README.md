@@ -3,19 +3,17 @@ Repository with the code to perform the Stimuli Validation experiment for the Sh
 
 ## Brief description of the repository and the architecture
 Inside the repository you can find the following files:
-* *art_data.csv*: .csv file to store the data regarding the artistic skills of the participant;
-* *rank_data.csv*: .csv file to store the difficulty, enjoyment and likeability rankings for all the categories;
-* *time_data.csv*: .csv file to store the latency and total drawing time and number of strokes for all the categories;
-* *stimuli.py*: main script running the graphic UI;
+* *stimuli.py*: main script to launch in the condition "no robot";
+* *stimuli_nico.py*: main script to launch in the condition "robot";
 * *drawing.py*: script to handle the drawing part and the storage of the images and coordinates of the strokes;
 * *drawing_trial.py*: script to handle the trial part in which the user will draw a category not between the important ones.
 
 ### Architecture
-The architecture is very basic: the `stimuli.py` script contains all the graphic windows (created via the psychopy library) for the interaction with the user and launch both the`drawing_trial.py` and `drawing.py` scripts, waiting for them to finish before going on.
-In the drawing scripts a tkinter canva is configured so the participant can draw freely.
+The architecture is very basic: the `stimuli.py`/`stimuli_nico.py` scripts contain all the graphic windows (created via the psychopy library) for the interaction with the user and launch both the `drawing_trial.py` and `drawing.py` scripts (as subprocesses), waiting for them to finish before going on with the questions.
+In the drawing scripts a tkinter canva is configured so the participants can draw freely with their finger.
 
 ## Folder and files created during the experiment
-At the first launch of the code, you will notice that a folder `Images` has been created, in which there will be created folders for each participant to store their drawings. Inside these personal folders, other two .csv files will be created (these are technical .csv files to store the coordinates of each stroke for every category and the personal answer to the questionnaire).
+At the first launch of the code, you will notice that a folder `Images` has been created, in which there will be created other folders for storage of the drawings created by the participants. The drawings will be saved as .png files. Inside these personal folders, other two .csv files will be created (these are technical .csv files to store the coordinates of each stroke for every category and the personal answer to the questionnaire).
 
 ## How to run the code
 First of all, clone this repository wherever you prefer with the following commands:

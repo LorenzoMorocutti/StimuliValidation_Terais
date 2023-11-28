@@ -17,7 +17,7 @@ condition = sys.argv[3]
 country = sys.argv[4]
 experiment_path = sys.argv[5]
 
-strokes_file_path = experiment_path + "/full_raw_" + cat + ".ndjson"
+strokes_file_path = experiment_path + "/raw_" + cat + ".ndjson"
 
 start = time.time()
 
