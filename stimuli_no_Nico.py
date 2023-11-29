@@ -10,7 +10,6 @@ import datetime
 import sys
 import numpy as np
 import subprocess
-#from statemachine import StateMachine, State
 import csv
 from datetime import datetime
 import json
@@ -22,13 +21,11 @@ participant = sys.argv[1]
 country = sys.argv[2]
 condition = sys.argv[3]
 
-#startup()
-
 input("Press Enter to continue...")
 
 
-code_path = "/usr/local/src/robot/cognitiveinteraction/stimuli_validation/"  #for Italy
-#code_path = "C:/Experiment/Drawing/"   #for Bratislava
+#code_path = "/usr/local/src/robot/cognitiveinteraction/stimulivalidation/"  #for Italy
+code_path = "C:/Experiment/Drawing/"   #for Bratislava
 
 images_dir = code_path+"Images/"
 experiment_dir = images_dir + "Experiments_raw/"
@@ -48,14 +45,19 @@ participant_dir = participant + str(date_hour)
 path_folder_participant = images_dir + participant_dir
 os.mkdir(path_folder_participant)
 
-seq = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]  # 0 is ambulance, 1 is owl, 2 is flower
-random.shuffle(seq)
-categories = ['Sheep', 'Duck', 'Computer',
-              'Face', 'Penguin', 'Mosquito',
-              'Bus', 'Drums', 'Map',
-              'Ambulance', 'Sea Turtle', 'Alarm Clock',
-              'Pizza', 'Teddy Bear', 'Ant',
-              'Crab', 'Bee', 'Pig']
+seq_1 = [0, 1, 2]
+seq_2 = [3, 4, 5, 6, 7, 8, 9, 10, 11]
+seq_3 = [12, 13, 14]
+
+random.shuffle(seq_1)
+random.shuffle(seq_2)
+random.shuffle(seq_3)
+
+categories = ['Sheep', 'Bus', 'Bee',
+              'Face', 'Computer', 'Duck',
+              'Penguin', 'Drums', 'Ambulance',
+              'Crab', 'Ant', 'Alarm Clock',
+              'Sheep', 'Bus', 'Bee']
 
 global win
 
@@ -65,18 +67,21 @@ drawing_enjoyment = 0.0
 drawing_frequency = 0.0
 drawing_percentage = 0.0
 
-difficulty_ranking = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-enjoyment_ranking = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-likeability_ranking = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+difficulty_ranking = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+enjoyment_ranking = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+likeability_ranking = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-latency_time = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-total_drawing_time = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-number_of_strokes = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+latency_time = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+total_drawing_time = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+number_of_strokes = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 
 def save_rankings(n):
 
-    path_var = images_dir + "/" + str(categories[n]) + "_quantitative_data.ndjson"
+    if n <= 11:
+        path_var = images_dir + "/" + str(categories[n]) + "_quantitative_data.ndjson"
+    else:
+        path_var = images_dir + "/" + str(categories[n]) + "_repetition_quantitative_data.ndjson"
 
     ranking_data = {
         'Participant_ID': participant,
@@ -245,12 +250,27 @@ def drawing_activity(i):
     win.close()
     print("window closed, ready to open drawing")
 
-    #for Bratislava
-    #p = subprocess.Popen(["C:/Experiment/Drawing/drawing_venv/Scripts/python", script_path, categories[i], path_folder_participant, condition, country, experiment_dir], stdout=subprocess.PIPE)
+    if i <= 11:
 
-    p = subprocess.Popen(["python3", script_path, categories[i], path_folder_participant,
-         condition, country, experiment_dir], stdout=subprocess.PIPE)
-    p.wait()
+        #for Italy
+        #p = subprocess.Popen(["python3", script_path, categories[i], path_folder_participant,
+        #                condition, country, experiment_dir], stdout=subprocess.PIPE)
+
+        # for Bratislava
+        p = subprocess.Popen(["C:/Experiment/Drawing/drawing_venv/Scripts/python", script_path, categories[i],
+                           path_folder_participant, condition, country, experiment_dir], stdout=subprocess.PIPE)
+        p.wait()
+    else:
+        cat_repetition = categories[i]+"_repetition"
+
+        #p = subprocess.Popen(["python3", script_path, cat_repetition, path_folder_participant,
+        #        condition, country, experiment_dir], stdout=subprocess.PIPE)
+
+        # for Bratislava
+        p = subprocess.Popen(["C:/Experiment/Drawing/drawing_venv/Scripts/python", script_path, cat_repetition,
+                              path_folder_participant, condition, country, experiment_dir], stdout=subprocess.PIPE)
+        p.wait()
+
 
     output = []
     output = p.stdout.read()
@@ -572,7 +592,10 @@ def main():
 
     win.close()
 
-    p = subprocess.Popen(["python3", script_path_trial])
+    #for Italy
+    #p = subprocess.Popen(["python3", script_path_trial])
+
+    p = subprocess.Popen(["C:/Experiment/Drawing/drawing_venv/Scripts/python", script_path_trial])
     p.wait()
 
     configure()
@@ -621,8 +644,15 @@ def main():
 
     artistic_questions()
 
-    for i in seq:
+    for i in seq_1:
         drawing_task(i)
+
+    for i in seq_2:
+        drawing_task(i)
+
+    for i in seq_3:
+        drawing_task(i)
+
 
     path_var = code_path + "/artistic_skills.ndjson"
 

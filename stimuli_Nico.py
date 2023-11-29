@@ -45,14 +45,12 @@ participant_dir = participant + str(date_hour)
 path_folder_participant = images_dir + participant_dir
 os.mkdir(path_folder_participant)
 
-seq = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]  # 0 is sheep, 1 is duck, 2 is computer
+seq = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]  # 0 is sheep, 1 is duck, 2 is computer
 random.shuffle(seq)
-categories = ['Sheep', 'Duck', 'Computer',
-              'Face', 'Penguin', 'Mosquito',
-              'Bus', 'Drums', 'Map',
-              'Ambulance', 'Sea Turtle', 'Alarm Clock',
-              'Pizza', 'Teddy Bear', 'Ant',
-              'Crab', 'Bee', 'Pig']
+categories = ['Sheep', 'Bus', 'Bee',
+              'Face', 'Computer', 'Duck',
+              'Mosquito', 'Map', 'Sea Turtle',
+              'Pizza', 'Teddy Bear', 'Pig']
 
 global win
 
@@ -62,13 +60,13 @@ drawing_enjoyment = 0.0
 drawing_frequency = 0.0
 drawing_percentage = 0.0
 
-difficulty_ranking = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-enjoyment_ranking = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-likeability_ranking = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+difficulty_ranking = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+enjoyment_ranking = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+likeability_ranking = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-latency_time = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-total_drawing_time = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-number_of_strokes = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+latency_time = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+total_drawing_time = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+number_of_strokes = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 
 def save_rankings(n):
